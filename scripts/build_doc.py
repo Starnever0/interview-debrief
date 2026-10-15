@@ -174,26 +174,33 @@ def _render_question(idx, q):
             lines.append("- **最该改的一处**：" + _str(review.get("top_fix")))
         lines.append("")
 
-    # better answer (three layers)
+    # better answer — a reference answer is mandatory; guidance / outline /
+    # variants are optional extras
     ba = q.get("better_answer") or {}
-    direction = _str(ba.get("direction"))
-    outline = _numbered(ba.get("outline"))
     sample = _str(ba.get("sample"))
-    if direction or outline or sample:
+    guidance = _str(ba.get("guidance")) or _str(ba.get("direction"))
+    outline = _numbered(ba.get("outline"))
+    variants = _bullets(ba.get("variants"))
+    if sample or guidance or outline or variants:
         lines.append("**更好的答法**")
         lines.append("")
-        if direction:
-            lines.append("**方向**：" + direction)
+        if sample:
+            lines.append("**参考答案**")
+            lines.append("")
+            lines.extend(_quote(sample))
+            lines.append("")
+        if guidance:
+            lines.append("**指导**：" + guidance)
             lines.append("")
         if outline:
             lines.append("**要点骨架**")
             lines.append("")
             lines.extend(outline)
             lines.append("")
-        if sample:
-            lines.append("**示范回答**（参考，非唯一答案）")
+        if variants:
+            lines.append("**变体 / 追问延伸**")
             lines.append("")
-            lines.extend(_quote(sample))
+            lines.extend(variants)
             lines.append("")
 
     return _trim(lines)

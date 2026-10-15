@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A公司 Agent 开发 一面 面试复盘</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f4f5f7; --card:#ffffff; --ink:#1f2430; --muted:#5b6472;
+  --line:#e5e8ee; --accent:#2563eb; --accent-soft:#eff4ff;
+  --good:#0f766e; --good-soft:#e6f4f1; --warn:#b45309; --warn-soft:#fdf3e3;
+  --bad:#b91c1c; --bad-soft:#fdeceb; --radius:12px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15px; line-height:1.78; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:940px; margin:0 auto; padding:36px 20px 72px}
+.hero{margin-bottom:24px}
+.hero h1{margin:0 0 14px; font-size:26px; line-height:1.4; font-weight:650; letter-spacing:.2px}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{background:var(--card); border:1px solid var(--line); border-radius:999px;
+  padding:3px 12px; font-size:13px; color:var(--muted)}
+.chip b{color:var(--ink); font-weight:600}
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:20px 22px; margin-bottom:16px; box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.card > h2{margin:0 0 12px; font-size:16px; font-weight:650; color:var(--ink)}
+.card > h2 .idx{color:var(--accent); margin-right:8px; font-variant-numeric:tabular-nums}
+.body{margin:0 0 10px; white-space:pre-wrap; color:#2b3340}
+.body:last-child{margin-bottom:0}
+.subhead{margin:16px 0 6px; font-size:13px; font-weight:650; color:var(--muted);
+  text-transform:uppercase; letter-spacing:.6px}
+.subhead:first-child{margin-top:0}
+.bullets{margin:0; padding-left:20px}
+.bullets li{margin:3px 0}
+.outline{margin:0; padding-left:22px}
+.outline li{margin:4px 0}
+.stats{display:flex; flex-wrap:wrap; gap:18px; align-items:baseline; margin:0 0 14px}
+.stat{font-size:14px; color:var(--muted)}
+.stat b{font-size:20px; color:var(--ink); margin-right:4px}
+.dist{display:flex; flex-wrap:wrap; gap:10px}
+.dist-item{background:var(--accent-soft); color:#1e40af; border-radius:8px;
+  padding:6px 11px; font-size:13px}
+.dist-item b{font-variant-numeric:tabular-nums}
+.filters{display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 14px}
+.filter-btn{appearance:none; cursor:pointer; font:inherit; font-size:13px;
+  background:var(--card); color:var(--muted); border:1px solid var(--line);
+  border-radius:999px; padding:5px 14px; transition:.15s}
+.filter-btn:hover{border-color:#c9d3e6; color:var(--ink)}
+.filter-btn.active{background:var(--accent); border-color:var(--accent); color:#fff}
+.qa{background:var(--card); border:1px solid var(--line); border-left:3px solid var(--accent);
+  border-radius:var(--radius); padding:20px 22px; margin-bottom:16px;
+  box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.qa-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; margin-bottom:14px}
+.qnum{background:var(--accent); color:#fff; font-size:12px; font-weight:650;
+  border-radius:6px; padding:2px 8px; font-variant-numeric:tabular-nums}
+.qtext{margin:0; font-size:16px; font-weight:620; line-height:1.6; flex:1 1 260px}
+.cat{font-size:12px; color:#1e40af; background:var(--accent-soft);
+  border-radius:6px; padding:2px 9px}
+.block{margin-top:14px}
+.block > .label{font-size:12px; font-weight:650; color:var(--muted);
+  letter-spacing:.5px; margin-bottom:6px}
+.intent{border-left:2px solid #c9d3e6; padding:2px 0 2px 12px; color:#2b3340}
+.intent .extra{display:block; color:var(--muted); font-size:14px; margin-top:4px}
+blockquote{margin:0; background:#fafbfc; border:1px solid var(--line);
+  border-radius:10px; padding:12px 14px; color:#2b3340; white-space:pre-wrap}
+.review-list{margin:0; padding-left:0; list-style:none}
+.review-list li{margin:5px 0; padding-left:14px; position:relative}
+.review-list li::before{content:""; position:absolute; left:2px; top:11px;
+  width:4px; height:4px; border-radius:50%; background:#c3cbd9}
+.review-list li.fix{color:var(--ink); font-weight:600}
+.review-list li.fix::before{background:var(--warn)}
+.hit{display:inline-block; font-size:12px; border-radius:999px;
+  padding:1px 10px; margin-left:8px; font-weight:600}
+.hit-good{background:var(--good-soft); color:var(--good)}
+.hit-warn{background:var(--warn-soft); color:var(--warn)}
+.hit-bad{background:var(--bad-soft); color:var(--bad)}
+.sample{background:#f8fbff; border:1px solid #d9e6fb; border-radius:10px;
+  padding:14px 16px; color:#233; white-space:pre-wrap}
+.variant{margin-top:8px; color:#2b3340}
+.notes{margin-top:26px; color:var(--muted); font-size:14px}
+.notes ul{margin:6px 0 0; padding-left:20px}
+footer{margin-top:34px; color:#8b93a1; font-size:12.5px; text-align:center}
+.placeholder{display:none}
+@media (max-width:600px){
+  .wrap{padding:24px 14px 56px}
+  .hero h1{font-size:21px}
+  .qa, .card{padding:16px 15px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+<h1>A公司 Agent 开发 一面 面试复盘</h1>
+<div class="chips"><span class="chip">日期：<b>2026-10-11</b></span><span class="chip">公司：<b>A公司</b></span><span class="chip">岗位：<b>Agent 开发</b></span><span class="chip">轮次：<b>一面</b></span><span class="chip">面试官：<b>用人经理</b></span><span class="chip">材料类型：<b>转写文本</b></span><span class="chip">结果：<b>待定</b></span></div>
+</header>
+<section class="card">
+<h2><span class="idx">0</span>材料与背景</h2>
+<p class="body">面试官开场自我介绍，团队负责企业内部 Agent 平台，正在做 Agent 的权限审计与行为可观测。</p>
+</section>
+<section class="card">
+<h2><span class="idx">1</span>本轮考察脉络</h2>
+<p class="body">这轮重心在 Agent 工程落地能力与计算机基础，项目深挖集中在 RAG 与工具调用链路的可靠性。</p>
+</section>
+<section class="card">
+<h2><span class="idx">2</span>反问环节情报</h2>
+<div class="subhead">面试官给的意见</div><p class="body">建议补一下分布式一致性的基础，Agent 侧讲得比基础更扎实。</p><div class="subhead">部门/团队/业务介绍</div><p class="body">团队 8 人，做内部 Agent 平台，服务多个业务线，当前重点是把 Agent 的行为纳入审计。</p>
+</section>
+<section class="card">
+<h2><span class="idx">3</span>我的整体表现评价</h2>
+<p class="body">项目与 Agent 侧表达清晰、有细节；计算机基础偏弱，追问三层后明显断档。</p><div class="subhead">亮点</div><ul class="bullets"><li>项目贡献归属讲得清楚</li><li>RAG 链路的失败模式有真实踩坑</li></ul><div class="subhead">短板</div><ul class="bullets"><li>TCP/一致性哈希类问题只停在定义层</li><li>表达略冗长，单题常超时</li></ul>
+</section>
+<section class="card">
+<h2><span class="idx">4</span>汇总与分类统计</h2>
+<div class="stats"><span class="stat"><b>2</b>题</span><span class="stat"><b>1</b>题有回答</span><span class="stat"><b>1</b>题无回答</span></div><div class="dist"><span class="dist-item">计算机基础八股 <b>1</b></span><span class="dist-item">项目经历 <b>1</b></span></div>
+</section>
+<div class="qa-section">
+<div class="filters"><button class="filter-btn active" data-cat="__all__">全部</button><button class="filter-btn" data-cat="项目经历">项目经历</button><button class="filter-btn" data-cat="计算机基础八股">计算机基础八股</button></div>
+<article class="qa" data-cat="项目经历">
+<header class="qa-head">
+<span class="qnum">Q1</span>
+<h3 class="qtext">你们 RAG 的召回质量是怎么保证的？</h3>
+<span class="cat">项目经历 / RAG 召回</span>
+</header>
+<div class="block"><div class="label">面试官意图</div><div class="intent">连续追问三次召回口径（怎么算、bad case 怎么归因、上线后是否回落），可能是在确认这件事是不是他本人做过、有没有量化归因的方法。<span class="extra">补充：也可能只是固定题本里的追问，与回答质量无关。</span></div></div>
+<div class="block"><div class="label">我的回答</div><blockquote>讲了用 rerank 提效果，召回率大概提升了百分之三十左右。</blockquote></div>
+<div class="block"><div class="label">评价<span class="hit hit-warn">部分命中</span></div><ul class="review-list"><li>踩中考点：方向对，知道 rerank 是主要手段。</li><li>遗漏：没交代召回率的口径（分母、样本集、统计周期）。</li><li>表达与结构：先讲了五分钟背景，真正做的事只讲了两句。</li><li class="fix">最该改的一处：把口径讲清楚：在哪个评测集上、用什么指标、提升了多少。</li></ul></div>
+<div class="block"><div class="label">更好的答法</div><div class="subhead">参考答案</div><div class="sample">这块我们是先有度量、再有优化的。评测集是从线上真实提问里抽的，160 条，人工标了标准答案，指标看 Recall@5 和 Hit@5。第一轮 badcase 归因下来，六成是专业术语召不到——chunk 切得太碎，一个术语被切成两段就再也匹配不上。所以第二轮改的是检索侧：BM25 和向量双路召回做融合，再过一层 rerank 收敛排序。Recall@5 从 0.71 提到 0.88，Hit@5 到了 95%。上线之后是按周盯回落，重点看新增长尾 query 的命中率。</div><div class="subhead">指导</div><p class="body">面试官想听的是「你如何度量并归因召回问题」，不是「你用了什么组件」。先讲口径再讲手段；顺序反了会显得只是执行者。</p><div class="subhead">要点骨架</div><ol class="outline"><li>评测集怎么构造的、多少条</li><li>指标定义：recall@k 还是命中率，分母是什么</li><li>主要 bad case 的归因分布</li><li>改动后的对比与上线后的监控</li></ol><div class="subhead">变体 / 追问延伸</div><ul class="bullets"><li>若追问「rerank 之后还召不回怎么办」→ 讲兜底：query 改写 + 放宽 k 值，并主动说明代价是延迟上升。</li><li>只有 30 秒时 → 只讲「评测集口径 + 提升幅度 + 上线怎么监控」三句。</li></ul></div>
+</article>
+<article class="qa" data-cat="计算机基础八股">
+<header class="qa-head">
+<span class="qnum">Q2</span>
+<h3 class="qtext">说下一致性哈希，它解决了什么问题？</h3>
+<span class="cat">计算机基础八股 / 分布式·一致性哈希</span>
+</header>
+<div class="block"><div class="label">面试官意图</div><div class="intent">单问一题、没有追问，可能是常规基础考察，判断分布式基本功是否扎实。</div></div>
+<div class="block"><div class="label">更好的答法</div><div class="subhead">参考答案</div><div class="sample">一致性哈希解决的是分布式缓存/存储扩容时数据大规模迁移的问题。普通做法是 hash(key) % N，一旦 N 变化，绝大多数 key 的落点都会变，缓存会大面积失效。一致性哈希把 0~2^32 组织成一个环，节点和 key 都映射到环上，key 顺时针找到的第一个节点就是它的归属。这样增加或删除一个节点，只影响环上相邻的一段区间，而不是全量。它的副作用是节点少时分布不均，所以通常给每个物理节点挂多个虚拟节点来打散。</div><div class="subhead">指导</div><p class="body">标准八股，按「问题 → 结构 → 效果 → 副作用」四步讲完即可，别停在定义层。</p><div class="subhead">要点骨架</div><ol class="outline"><li>普通哈希取模的问题：扩容时几乎全量重分布</li><li>一致性哈希的环形结构：key 与节点同环，顺时针找第一个节点</li><li>节点增减只影响相邻区间</li><li>数据倾斜问题与引入虚拟节点</li></ol><div class="subhead">变体 / 追问延伸</div><ul class="bullets"><li>若追问「虚拟节点挂多少个」→ 一般取物理节点数的 100~200 倍，具体看集群规模与 key 分布。</li></ul></div>
+</article>
+</div>
+<section class="notes"><div class="subhead">备注</div><ul class="bullets"><li>本场未出现场景设计题。</li></ul></section>
+<footer>由 interview-debrief 生成 · 推断部分为合理推测，请结合实际情况判断</footer>
+</div>
+<script>
+(function(){
+  var buttons = document.querySelectorAll('.filter-btn');
+  var cards = document.querySelectorAll('.qa');
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].addEventListener('click', function(){
+      var cat = this.getAttribute('data-cat');
+      for (var j = 0; j < buttons.length; j++) {
+        buttons[j].classList.toggle('active', buttons[j] === this);
+      }
+      for (var k = 0; k < cards.length; k++) {
+        cards[k].style.display =
+          (cat === '__all__' || cards[k].getAttribute('data-cat') === cat) ? '' : 'none';
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

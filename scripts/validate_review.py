@@ -9,15 +9,15 @@ Usage:
     python validate_review.py review.json [--record CONFIRMED_RECORD.md] [--quiet]
 
 Returns exit code 0 when there are no errors (warnings are allowed) and 1 when
-any error is found. `build_doc.py` imports this module and runs the same checks
-automatically before rendering.
+any error is found. `build_doc.py` and `build_html.py` import this module and run
+the same checks automatically before rendering.
 
 Iron rules enforced here (only the machine-checkable ones):
     E1  questions must be a non-empty list
-    E2  each question needs question / category / intent.core / better_answer.direction
+    E2  each question needs question / category / intent.core / better_answer.sample
+        (参考答案是必给的 -- 每道题都要有一段可以直接说出口的作答)
     E3  no answer  ->  no review        (面经类材料只有问题没有回答，不得评价)
-    E4  sample only when answer_kind == "standard"
-    E5  (with --record) question text must be traceable to the confirmed record
+    E4  (with --record) question text must be traceable to the confirmed record
 """
 
 import argparse
@@ -27,7 +27,6 @@ import os
 import re
 import sys
 
-VALID_ANSWER_KINDS = ("standard", "directional")
 VALID_HITS = ("命中", "部分命中", "偏离")
 
 _PUNCT_CHARS = " \t\r\n，。、；：？！,.;:?!\"'“”‘’（）()[]【】《》〈〉—…·-~～"
@@ -52,6 +51,18 @@ def _has_review_content(review):
         return False
     return any(_s(review.get(k)) for k in
                ("hit", "points", "missing", "delivery", "top_fix"))
+
+
+def _too_similar(a, b, threshold=0.9):
+    """True when the two texts are practically the same answer."""
+    na, nb = _norm(a), _norm(b)
+    if not na or not nb:
+        return False
+    if na == nb:
+        return True
+    if min(len(na), len(nb)) < 12:
+        return False
+    return difflib.SequenceMatcher(None, na, nb).ratio() >= threshold
 
 
 # --------------------------------------------------------------------------
@@ -158,8 +169,9 @@ def validate(data, record_text=None, threshold=0.75):
         if not isinstance(ba, dict):
             errors.append("E2 %s 缺少 better_answer（更好的答法）" % tag)
             ba = {}
-        if not _s(ba.get("direction")):
-            errors.append("E2 %s 缺少 better_answer.direction（一句话方向）" % tag)
+        if not _s(ba.get("sample")):
+            errors.append("E2 %s 缺少 better_answer.sample（参考答案必给，"
+                          "要能直接说出口）" % tag)
 
         answer = _s(q.get("answer"))
         review = q.get("review")
@@ -173,20 +185,14 @@ def validate(data, record_text=None, threshold=0.75):
         if _has_review_content(review) and hit and hit not in VALID_HITS:
             warnings.append("%s 的 hit「%s」不在 命中/部分命中/偏离 之内" % (tag, hit))
 
-        kind = _s(q.get("answer_kind"))
         sample = _s(ba.get("sample"))
-        if kind and kind not in VALID_ANSWER_KINDS:
-            errors.append("E4 %s 的 answer_kind「%s」非法（只能 standard / directional）"
-                          % (tag, kind))
-        elif sample and kind != "standard":
-            errors.append("E4 %s 给了示范回答，但 answer_kind 不是 standard"
-                          "（场景/开放题只给方向，不得给示范答案）" % tag)
-        elif kind == "standard" and not sample:
-            warnings.append("%s 声明为 standard 却没给示范回答" % tag)
+        if sample and answer and _too_similar(sample, answer):
+            warnings.append("%s 的参考答案与「我的回答」几乎一模一样，"
+                            "确认这是在示范更好的答法、而不是复述原话？" % tag)
 
         if record_text and question and \
                 not _find_in_record(question, record_lines, record_norm, threshold):
-            errors.append("E5 %s 的题干在确认后的面试记录里找不到"
+            errors.append("E4 %s 的题干在确认后的面试记录里找不到"
                           "（疑似改写或编造）：%s" % (tag, question))
 
     if record_text:

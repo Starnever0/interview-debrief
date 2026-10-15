@@ -191,7 +191,6 @@ blockquote{margin:0; background:#fafbfc; border:1px solid var(--line);
 .hit-bad{background:var(--bad-soft); color:var(--bad)}
 .sample{background:#f8fbff; border:1px solid #d9e6fb; border-radius:10px;
   padding:14px 16px; color:#233; white-space:pre-wrap}
-.sample .tag{display:block; font-size:12px; font-weight:650; color:#1e40af; margin-bottom:8px}
 .variant{margin-top:8px; color:#2b3340}
 .notes{margin-top:26px; color:var(--muted); font-size:14px}
 .notes ul{margin:6px 0 0; padding-left:20px}
@@ -327,21 +326,22 @@ def _qa_card(idx, q):
                          '<ul class="review-list">%s</ul></div>'
                          % (hit_html, "".join(lis)))
 
-    # better answer — the core value of this skill
+    # better answer — a reference answer is mandatory; guidance / outline /
+    # variants are optional extras
     ba = q.get("better_answer") or {}
-    direction = _str(ba.get("direction") or ba.get("guidance"))
-    outline = _items(ba.get("outline"))
     sample = _str(ba.get("sample"))
+    guidance = _str(ba.get("guidance")) or _str(ba.get("direction"))
+    outline = _items(ba.get("outline"))
     variants = _items(ba.get("variants"))
     ba_parts = []
-    if direction:
-        ba_parts.append('<div class="body">%s</div>' % _esc(direction))
+    if sample:
+        ba_parts.append('<div class="subhead">参考答案</div>'
+                        '<div class="sample">%s</div>' % _esc(sample))
+    if guidance:
+        ba_parts.append('<div class="subhead">指导</div><p class="body">%s</p>'
+                        % _esc(guidance))
     if outline:
         ba_parts.append('<div class="subhead">要点骨架</div>%s' % _ol(outline))
-    if sample:
-        ba_parts.append('<div class="subhead">示范回答</div>'
-                        '<div class="sample"><span class="tag">参考，非唯一答案</span>%s</div>'
-                        % _esc(sample))
     if variants:
         ba_parts.append('<div class="subhead">变体 / 追问延伸</div>%s' % _ul(variants))
     if ba_parts:
