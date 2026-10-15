@@ -19,7 +19,16 @@
 
 **输出** —— 一份复盘文档，结构固定：材料与背景 / 本轮考察脉络 / 反问环节情报 / 整体表现评价（可选）/ 逐题清单 / 汇总统计。同时产出 **Markdown**（存档、检索）与**网页版**（问答题做成卡片，带分类筛选，单文件、离线可开）两份。
 
-完整成品：[`sample-review.md`](assets/sample/sample-review.md)（文档版）· [`sample-review.html`](assets/sample/sample-review.html)（网页版，下载后双击即可看）。逐题块的形态大致是：
+**网页版长这样**（逐题卡片 + 分类筛选，单文件自包含、离线可开）：
+
+[![网页版复盘样例：顶部是材料与背景、本轮考察脉络、反问环节情报、整体评价与分类统计，下方按分类筛选逐题展开](assets/sample/sample-review.png)](assets/sample/sample-review.html)
+
+完整成品：
+
+- 网页版 [`sample-review.html`](assets/sample/sample-review.html) —— 下载后双击即可看 ｜ [在线预览](https://htmlpreview.github.io/?https://github.com/Starnever0/interview-debrief/blob/main/assets/sample/sample-review.html)
+- 文档版 [`sample-review.md`](assets/sample/sample-review.md)
+
+逐题块的形态大致是：
 
 ```markdown
 ### Q1. 你们 RAG 的召回质量是怎么保证的？
@@ -174,7 +183,7 @@ interview-debrief/
 │   └── validate_review.py                # 门禁校验脚本
 └── assets/
     ├── candidate-profile-template.md     # 候选人档案模板（复制到 ~/.interview-profile/ 填写）
-    └── sample/                           # 成品样例（sample-review.md + .html）
+    └── sample/                           # 成品样例：sample-review.md / .html / 预览图 .png
 ```
 
 ---
