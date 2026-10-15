@@ -8,7 +8,7 @@ agent_created: true
 
 ## 这个技能做什么
 
-把用户提供的一次面试材料，整理成一份**候选人视角**的复盘文档：这轮面试在考什么、面试官每道题可能想确认什么、自己答得如何、怎样答更好（给参考方向或示范答案）。同时可选地把本场沉淀到个人面试档案，供跨场对照。
+把用户提供的一次面试材料，整理成一份**候选人视角**的复盘文档（Markdown + 可分享的网页版）：这轮面试在考什么、面试官每道题可能想确认什么、自己答得如何、怎样答更好（给参考答案与作答方向）。同时可选地把本场沉淀到个人面试档案，供跨场对照。
 
 与"面试官视角诊断"类工具的关键差异：**本技能会给参考答案 / 作答方向**——这是它的核心价值，不要为了"客观"而省略。
 
@@ -154,15 +154,21 @@ agent_created: true
 
 1. 产出结构化 `review.json`（字段 schema 见 `references/doc-template.md`）。**每题必须显式给出 `answer_kind`**（`standard` / `directional`）——它是门禁判定"示范回答铁律"的唯一依据，拿不准按 `directional` 处理。
 2. 把面试记录写成一份文件（路径随意），用于归档与覆盖度校验：**含回答**的材料用第 2 步用户确认后的版本；**纯面经**用还原后的版本。
-3. 渲染落盘：
+3. 渲染落盘——两个脚本各管一种产物：
 
 ```bash
-python scripts/build_doc.py review.json --record <确认后的记录文件>
+# Markdown + 结构化数据 + 记录归档
+python scripts/build_doc.py review.json --record <记录文件>
+
+# 网页版：问答题卡片化，比纯文本直观得多
+python scripts/build_html.py review.json
 ```
 
-脚本内部**先跑门禁再渲染**：结构或铁律不通过会中止并打印具体错误；警告会打印但不阻断。产物三个——`<基名>.md`（复盘文档）、`<基名>.json`（结构化数据，可重渲染）、`<基名>.记录.md`（确认后的记录），路径按 `[md]` / `[json]` / `[record]` 标签打印。
+两个脚本内部都**先跑门禁再渲染**：结构或铁律不通过会中止并打印具体错误；警告会打印但不阻断。
 
-- 目标 `.md` 已存在时脚本**默认拒绝覆盖**，确认要重跑再加 `--force`。
+- `build_doc.py` 产出三个——`<基名>.md`（复盘文档）、`<基名>.json`（结构化数据，可重渲染）、`<基名>.记录.md`（确认后的记录），路径按 `[md]` / `[json]` / `[record]` 标签打印。
+- `build_html.py` 产出 `<基名>.html`（自包含单文件，离线可开），路径按 `[html]` 标签打印。
+- 目标文件已存在时两个脚本都**默认拒绝覆盖**，确认要重跑再加 `--force`。
 - 只跑门禁不渲染：`python scripts/validate_review.py review.json --record <记录文件>`。
 
 4. 把产物展示给用户（平台若提供文件预览能力则调用），并附一段简短要点小结。
@@ -198,7 +204,7 @@ python scripts/build_doc.py review.json --record <确认后的记录文件>
 ## 5. 汇总与分类统计
 ```
 
-默认只产出 Markdown。用户需要网页版时再单独处理。
+产物默认两份：**Markdown**（存档、可检索）与 **HTML**（阅读、分享——问答题做成卡片，比纯文本直观）。HTML **完全自包含**，CSS 与筛选脚本全部内联，无外部字体 / CDN / 图片，离线双击可开、可直接发给别人。
 
 ## 铁律
 
@@ -229,7 +235,7 @@ python scripts/build_doc.py review.json --record <确认后的记录文件>
 
 - frontmatter 只保留 `name`、`description`（`agent_created` 为 WorkBuddy 侧管理所需，其他平台会忽略）。
 - 描述动作时用自然语言（"读取文件""运行脚本""联网检索"），**不绑定任何平台的工具名**。
-- `scripts/build_doc.py` 只用 Python 标准库，跨 Windows / macOS / Linux。
+- `scripts/` 下的脚本只用 Python 标准库，跨 Windows / macOS / Linux。
 - 个人数据统一放在家目录 `~/.interview-profile/`，不用任何平台专属路径。
 
 **非 skill 平台的使用方式**：把 `SKILL.md` 连同 `references/` 下三个文件一起提供给模型即可，功能一致，只是需要手动附加。
@@ -247,5 +253,6 @@ python scripts/build_doc.py review.json --record <确认后的记录文件>
 - `references/answer-style.md`——意图剖析、评价、更好的答法的写作规范。**写内容前必读。**
 - `references/profile-spec.md`——`~/.interview-profile/` 目录约定与沉淀流程。**读 / 写档案时读。**
 - `scripts/build_doc.py`——零依赖渲染脚本：`review.json` → Markdown 落盘（渲染前自动跑门禁）。
+- `scripts/build_html.py`——零依赖渲染脚本：`review.json` → 自包含 HTML 网页（问答题卡片 + 分类筛选），渲染前同样跑门禁。
 - `scripts/validate_review.py`——门禁校验脚本，检查结构与铁律，也可单独运行。
 - `assets/candidate-profile-template.md`——候选人档案模板（含转录关键词清单），供用户首次填写（复制到 `~/.interview-profile/`）。
